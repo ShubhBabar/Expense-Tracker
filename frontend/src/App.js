@@ -6,6 +6,10 @@ import LogIn from "./pages/LogIn";
 import Dashboard from "./pages/Dashboard";
 import UpdateUserProfile from "./components/UpdateUserProfile";
 import User from "./components/User";
+import AddExpenseForm from "./components/AddExpenseForm";
+import ExpenseList from "./components/ExpenseList";
+import ExpenseSummary from "./components/ExpenseSummary";
+import Settings from "./components/Settings";
 
 function App() {
   return (
@@ -16,7 +20,11 @@ function App() {
         <Route path="/login" element={<LogIn/>} />
         <Route path="/dashboard" element={<Dashboard/>} />
         <Route path="/user" element={<User />} />
-        <Route path="/edituser" element={<UpdateUserProfile />} />
+        <Route path="/edit-user" element={<UpdateUserProfile />} />
+        <Route path="/add-expense" element={<AddExpenseForm />} />
+        <Route path="/all-expenses" element={<ExpenseList />} />
+        <Route path="/expense-summary" element={<ExpenseSummary />} />
+        <Route path="/set-budget" element={<Settings />} />
       </Routes>
     </Router>
   );
