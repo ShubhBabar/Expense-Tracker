@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const LogIn = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -11,9 +13,26 @@ const LogIn = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("User Data: ", formData);
+    try {
+      const response = await axios.post("http://localhost:5000/user/login", formData,{
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      if (response.status === 200) {
+        console.log("Login Response:", response.data);
+        alert("Login successful!");
+        localStorage.setItem("authToken", response.data.token);
+        console.log("Token stored:", response.data.token);
+        navigate("/dashboard");
+      } else {
+        alert(response.data.message || "Login failed");
+      }
+    } catch (error) {
+      alert("something went wrong while trying to Login")
+    }
   };
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">

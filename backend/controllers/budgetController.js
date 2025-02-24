@@ -11,13 +11,15 @@ const setBudget = async (req, res) => {
     let budget = await Budget.findOne({userId: req.user.userId, month })
     if (budget) {
         budget.totalBudget = totalBudget;
+        await budget.save();
       } else {
         budget = new Budget({ userId: req.user.userId, month, totalBudget });
+        await budget.save();
       }
       await budget.save();
     res.json({ message: "Budget set successfully", budget });
   } catch (error) {
-    
+    res.status(500).json({ message: "Server error" });
   }
 };
 

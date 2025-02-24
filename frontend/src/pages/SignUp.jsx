@@ -1,16 +1,17 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const SignUp = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: "",
     firstName: "",
     lastName: "",
     email: "",
     password: "",
-    confirmPassword: "",
     mobileNumber: "",
-    countryCode: "+1", // default country code
+    countryCode: "+91",
   });
 
   const countryCodes = [
@@ -25,9 +26,32 @@ const SignUp = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("User Data: ", formData);
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/user/register",
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (response.status === 201) {
+        alert("Registration successful!");
+        localStorage.setItem("authToken", response.data.token);
+        navigate("/dashboard");
+      } else {
+        alert("Registration failed!");
+      }
+    } catch (error) {
+      console.error("Error Response:", error.response);
+      alert(
+        error.response?.data?.message ||
+          "Something went wrong while Registration"
+      );
+    }
   };
 
   return (
@@ -75,7 +99,9 @@ const SignUp = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Username */}
               <div>
-                <label className="block text-gray-700 font-medium">Username</label>
+                <label className="block text-gray-700 font-medium">
+                  Username
+                </label>
                 <input
                   type="username"
                   name="username"
@@ -174,21 +200,6 @@ const SignUp = () => {
                   type="password"
                   name="password"
                   value={formData.password}
-                  onChange={handleChange}
-                  required
-                  className="w-full mt-1 p-2 border rounded-md focus:ring focus:ring-blue-200"
-                />
-              </div>
-
-              {/* Confirm Password */}
-              <div>
-                <label className="block text-gray-700 font-medium">
-                  Confirm Password
-                </label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
                   onChange={handleChange}
                   required
                   className="w-full mt-1 p-2 border rounded-md focus:ring focus:ring-blue-200"

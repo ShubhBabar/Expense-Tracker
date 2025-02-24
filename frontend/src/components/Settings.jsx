@@ -1,29 +1,42 @@
 import React, { useState } from "react";
+import axios from "axios";
 
-const Settings = ({ setBudget, addCategory, categories }) => {
-  const [budgetInput, setBudgetInput] = useState("");
-  const [categoryInput, setCategoryInput] = useState("");
+const Settings = () => {
+  const [totalBudget, setTotalBudget] = useState("");
 
   // Handle setting the budget
-  const handleBudgetSubmit = (e) => {
+  const handleBudgetSubmit = async (e) => {
     e.preventDefault();
-    if (!budgetInput || isNaN(budgetInput) || budgetInput <= 0) {
+    if (!totalBudget || isNaN(totalBudget) || totalBudget <= 0) {
       alert("Please enter a valid budget amount.");
       return;
     }
-    setBudget(Number(budgetInput));
-    setBudgetInput("");
-  };
 
-  // Handle adding a new category
-  const handleCategorySubmit = (e) => {
-    e.preventDefault();
-    if (!categoryInput.trim()) {
-      alert("Category name cannot be empty.");
-      return;
+    try {
+      const token = localStorage.getItem("authToken");
+
+      if (!token) {
+        alert("Unauthorized - No Token Found. Please log in again.");
+        window.location.href = "/login"; // Redirect to login
+        return;
+      }
+      const response = await axios.post(
+        "http://localhost:5000/budget/set-budget",
+        { totalBudget: Number(totalBudget), month: new Date().getMonth() + 1 }, // Send budget and month
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`.trim(),
+          },
+        }
+      );
+
+      alert("Budget saved successfully!");
+      setTotalBudget(""); // Clear input after saving
+    } catch (error) {
+      console.error("Error saving budget:", error.response?.data || error.message);
+      alert(`Failed to save budget: ${error.response?.data?.message || "Server error"}`);
     }
-    addCategory(categoryInput.trim());
-    setCategoryInput("");
   };
 
   return (
@@ -40,8 +53,8 @@ const Settings = ({ setBudget, addCategory, categories }) => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-3 sm:space-y-0">
           <input
             type="number"
-            value={budgetInput}
-            onChange={(e) => setBudgetInput(e.target.value)}
+            value={totalBudget}
+            onChange={(e) => setTotalBudget(e.target.value)}
             placeholder="Enter budget (₹)"
             className="px-4 py-2 border rounded-md w-full sm:w-2/3 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
@@ -53,47 +66,6 @@ const Settings = ({ setBudget, addCategory, categories }) => {
           </button>
         </div>
       </form>
-
-      {/* Add New Category */}
-      <form onSubmit={handleCategorySubmit} className="mb-6">
-        <label className="block text-gray-700 font-medium mb-2">
-          Add New Category:
-        </label>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-3 sm:space-y-0">
-          <input
-            type="text"
-            value={categoryInput}
-            onChange={(e) => setCategoryInput(e.target.value)}
-            placeholder="Enter category name"
-            className="px-4 py-2 border rounded-md w-full sm:w-2/3 focus:outline-none focus:ring-2 focus:ring-green-400"
-          />
-          <button
-            type="submit"
-            className="bg-green-500 text-white px-5 py-2 rounded-md hover:bg-green-600 transition-all"
-          >
-            Add
-          </button>
-        </div>
-      </form>
-
-      {/* Display Added Categories */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">Categories:</h3>
-        {categories.length > 0 ? (
-          <ul className="flex flex-wrap gap-3">
-            {categories.map((cat, index) => (
-              <li
-                key={index}
-                className="px-4 py-1 bg-gray-100 rounded-full text-gray-800 text-sm shadow-sm"
-              >
-                {cat}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-500">No categories added yet.</p>
-        )}
-      </div>
     </div>
   );
 };

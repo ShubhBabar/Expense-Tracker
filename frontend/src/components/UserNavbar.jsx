@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBars,
@@ -8,6 +9,34 @@ import {
 
 const UserNavbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+
+      if (!token) {
+        alert("No token found, redirecting to login.");
+        navigate("/login");
+        return;
+      }
+
+      await axios.post("http://localhost:5000/user/logout", {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Remove token from localStorage
+      localStorage.removeItem("authToken");
+
+      alert("Logged out successfully!");
+      navigate("/login"); // Redirect to login page
+    } catch (error) {
+      console.error("Logout Error:", error.response?.data?.message || error.message);
+      alert("Error logging out. Please try again.");
+    }
+  };
 
   return (
     <nav className="bg-blue-600 p-4 text-white flex justify-between items-center">
@@ -30,7 +59,7 @@ const UserNavbar = () => {
         </Link>
       </div>
       <div className="flex items-center space-x-4">
-        <button className="bg-red-500 px-3 py-1 rounded">Logout</button>
+        <button onClick={handleLogout} className="bg-red-500 px-3 py-1 rounded">Logout</button>
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className="md:hidden text-xl"

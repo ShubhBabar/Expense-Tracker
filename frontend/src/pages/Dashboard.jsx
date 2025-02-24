@@ -8,31 +8,6 @@ import Reports from "../components/Reports";
 import ExpenseSummary from "../components/ExpenseSummary";
 
 const Dashboard = () => {
-  const mockExpenses = [
-    { id: 1, name: "Groceries", category: "Food", amount: 150, date: "2025-02-14" },
-    { id: 2, name: "Uber", category: "Travel", amount: 50, date: "2025-02-13" },
-    { id: 3, name: "Gym Membership", category: "Health & Fitness", amount: 200, date: "2025-02-12" },
-    { id: 4, name: "Laptop", category: "Shopping", amount: 1200, date: "2025-02-11" },
-    { id: 5, name: "Insurance Premium", category: "Insurance", amount: 300, date: "2025-02-10" },
-  ];
-
-  const handleDelete = (id) => {
-    console.log(`Deleted expense with id: ${id}`);
-  };
-
-  const handleEdit = (id) => {
-    console.log(`Editing expense with id: ${id}`);
-  };
-
-  // Settings component state
-  const [budget, setBudget] = useState(5000);
-  const [categories, setCategories] = useState(["Investment", "Bills", "Education"]);
-
-  const addCategory = (newCategory) => {
-    if (!categories.includes(newCategory)) {
-      setCategories([...categories, newCategory]);
-    }
-  };
 
   // Reports data
   const monthlyData = [
@@ -60,12 +35,12 @@ const Dashboard = () => {
     <div>
       <UserNavbar user={{ name: "John Doe" }} />
       <div className="p-4">
-        <BudgetOverview budget={budget} expenses={mockExpenses} />
+        <BudgetOverview />
         <AddExpenseForm />
-        <ExpenseList expenses={mockExpenses} handleDelete={handleDelete} handleEdit={handleEdit} />
-        <Settings setBudget={setBudget} addCategory={addCategory} categories={categories} />
+        <ExpenseList />
+        <Settings />
         <Reports monthlyData={monthlyData} categoryData={categoryData} highestExpenses={highestExpenses} />
-        <ExpenseSummary categoryData={categoryData} />
+        <ExpenseSummary />
       </div>
     </div>
   );

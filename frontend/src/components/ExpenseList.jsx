@@ -1,67 +1,124 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const ExpenseList = ({ expenses, handleDelete, handleEdit }) => {
-  // State to track sorting order and column
-  const [sortOrder, setSortOrder] = useState('asc'); // Default sorting is ascending
+const ExpenseList = () => {
+  const navigate = useNavigate();
+
+  const [expenses, setExpenses] = useState([]);
+  const [sortOrder, setSortOrder] = useState("asc"); // Default sorting is ascending
   const [sortedExpenses, setSortedExpenses] = useState(expenses); // State to hold sorted expenses
-  const [categoryFilter, setCategoryFilter] = useState(''); // State for category filter
-  const [searchQuery, setSearchQuery] = useState(''); // State for search query
+  const [categoryFilter, setCategoryFilter] = useState(""); // State for category filter
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [currentPage, setCurrentPage] = useState(1); // Current page number
-  const [rowsPerPage] = useState(5); // Number of rows to display per page
+  const [rowsPerPage] = useState(10); // Number of rows to display per page
 
-  // Categories for the dropdown
-  const categories = ['Food','Rent', 'Travel', 'Entertainment','Personal Care','Education & Learning', 'Health & Fitness', 'Shopping','Investments',  'Insurance','Other'];
+  const categories = [
+    "Food",
+    "Rent",
+    "Travel",
+    "Entertainment",
+    "Personal Care",
+    "Education & Learning",
+    "Health & Fitness",
+    "Shopping",
+    "Investments",
+    "Insurance",
+    "Other",
+  ];
 
-  // Handle sorting by amount
-  const handleSort = () => {
-    const sorted = [...sortedExpenses]; // Create a copy of expenses to avoid mutating the original array
-    if (sortOrder === 'asc') {
-      // Sort in ascending order
-      sorted.sort((a, b) => a.amount - b.amount);
-      setSortOrder('desc'); // Change order to descending
-    } else {
-      // Sort in descending order
-      sorted.sort((a, b) => b.amount - a.amount);
-      setSortOrder('asc'); // Change order to ascending
-    }
-    setSortedExpenses(sorted); // Update the sorted expenses
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          alert("Unauthorized - No Token Found. Please log in again.");
+          window.location.href = "/login";
+          return;
+        }
+        const response = await axios.get(
+          "http://localhost:5000/expense/getExpense",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setExpenses(response.data.expenses);
+        setSortedExpenses(response.data.expenses);
+      } catch (error) {
+        console.error("Error fetching expenses:", error);
+      }
+    };
+    fetchExpenses();
+  }, []);
+
+  const handleEdit = (id) => {
+    navigate(`/edit-expense/${id}`);
   };
 
-  // Handle category filter change
+  const handleDelete = async (id) => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      alert("Unauthorized - No Token Found. Please log in again.");
+      window.location.href = "/login";
+      return;
+    }
+    try {
+      await axios.delete(`http://localhost:5000/expense/deleteExpense/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,  // Add token here
+        },
+      });
+      setExpenses(expenses.filter((expense) => expense._id !== id));  // Update state correctly
+    } catch (error) {
+      console.error("Error deleting expense:", error);
+      alert("Failed to delete expense. Please try again.");
+    }
+  };
+
+  const handleSort = () => {
+    const sorted = [...sortedExpenses];
+    sorted.sort((a, b) =>
+      sortOrder === "asc" ? a.amount - b.amount : b.amount - a.amount
+    );
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    setSortedExpenses(sorted);
+  };
+
   const handleCategoryChange = (e) => {
     setCategoryFilter(e.target.value);
   };
 
-  // Handle search query change
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
 
-  // Filter the expenses based on selected category and search query
   useEffect(() => {
     let filteredExpenses = [...expenses];
 
-    // Filter by category if selected
     if (categoryFilter) {
-      filteredExpenses = filteredExpenses.filter((expense) => expense.category === categoryFilter);
+      filteredExpenses = filteredExpenses.filter(
+        (expense) => expense.category === categoryFilter
+      );
     }
 
-    // Further filter by search query if entered
     if (searchQuery) {
       filteredExpenses = filteredExpenses.filter((expense) =>
         expense.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    setSortedExpenses(filteredExpenses); // Update the sorted expenses
+    setSortedExpenses(filteredExpenses);
   }, [categoryFilter, searchQuery, expenses]);
 
-  // Get current page data
   const indexOfLastExpense = currentPage * rowsPerPage;
   const indexOfFirstExpense = indexOfLastExpense - rowsPerPage;
-  const currentExpenses = sortedExpenses.slice(indexOfFirstExpense, indexOfLastExpense);
+  const currentExpenses = sortedExpenses.slice(
+    indexOfFirstExpense,
+    indexOfLastExpense
+  );
 
-  // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
@@ -88,7 +145,7 @@ const ExpenseList = ({ expenses, handleDelete, handleEdit }) => {
             Reset Filter
           </button>
         </div>
-        
+
         {/* Search Bar */}
         <div className="flex items-center w-full sm:w-auto">
           <input
@@ -110,8 +167,8 @@ const ExpenseList = ({ expenses, handleDelete, handleEdit }) => {
               className="px-4 py-2 text-left border-b cursor-pointer"
               onClick={handleSort}
             >
-              Amount{' '}
-              {sortOrder === 'asc' ? (
+              Amount{" "}
+              {sortOrder === "asc" ? (
                 <span>&#8593;</span> // Up arrow for ascending
               ) : (
                 <span>&#8595;</span> // Down arrow for descending
@@ -132,13 +189,13 @@ const ExpenseList = ({ expenses, handleDelete, handleEdit }) => {
                 <td className="px-4 py-2 text-center">
                   <div className="flex flex-col sm:flex-row justify-center space-y-2 sm:space-x-2 sm:space-y-0">
                     <button
-                      onClick={() => handleEdit(expense.id)}
+                      onClick={() => handleEdit(expense._id)}
                       className="px-4 py-2 bg-blue-500 text-white rounded-md w-full sm:w-auto"
                     >
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(expense.id)}
+                      onClick={() => handleDelete(expense._id)}
                       className="px-4 py-2 bg-red-500 text-white rounded-md w-full sm:w-auto"
                     >
                       Delete
@@ -162,26 +219,40 @@ const ExpenseList = ({ expenses, handleDelete, handleEdit }) => {
         <button
           onClick={() => paginate(currentPage - 1)}
           disabled={currentPage === 1}
-          className={`px-4 py-2 rounded-md ${currentPage === 1 ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:border-blue-500 border border-transparent'} text-white`}
+          className={`px-4 py-2 rounded-md ${
+            currentPage === 1
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-blue-500 hover:border-blue-500 border border-transparent"
+          } text-white`}
         >
           Previous
         </button>
-        
+
         {/* Page Numbers */}
-        {[...Array(Math.ceil(sortedExpenses.length / rowsPerPage))].map((_, index) => (
-          <button
-            key={index}
-            onClick={() => paginate(index + 1)}
-            className={`px-4 py-2 mx-1 rounded-md ${currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-white text-gray-500 hover:border-blue-500 hover:text-blue-500 border border-transparent'}`}
-          >
-            {index + 1}
-          </button>
-        ))}
+        {[...Array(Math.ceil(sortedExpenses.length / rowsPerPage))].map(
+          (_, index) => (
+            <button
+              key={index}
+              onClick={() => paginate(index + 1)}
+              className={`px-4 py-2 mx-1 rounded-md ${
+                currentPage === index + 1
+                  ? "bg-blue-500 text-white"
+                  : "bg-white text-gray-500 hover:border-blue-500 hover:text-blue-500 border border-transparent"
+              }`}
+            >
+              {index + 1}
+            </button>
+          )
+        )}
 
         <button
           onClick={() => paginate(currentPage + 1)}
           disabled={currentPage * rowsPerPage >= sortedExpenses.length}
-          className={`px-4 py-2 rounded-md ${currentPage * rowsPerPage >= sortedExpenses.length ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:border-blue-500 border border-transparent'} text-white`}
+          className={`px-4 py-2 rounded-md ${
+            currentPage * rowsPerPage >= sortedExpenses.length
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-blue-500 hover:border-blue-500 border border-transparent"
+          } text-white`}
         >
           Next
         </button>

@@ -1,13 +1,15 @@
 import React, { useState } from "react";
-import Select from 'react-select';
+import Select from "react-select";
+import axios from "axios";
 
-const AddExpenseForm = ({ onAddExpense }) => {
+const AddExpenseForm = () => {
   const [expense, setExpense] = useState({
     name: "",
     amount: "",
     category: "Food",
     date: "",
   });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     // If e is a React Select change event, handle it differently
@@ -19,27 +21,63 @@ const AddExpenseForm = ({ onAddExpense }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!expense.name || !expense.amount || !expense.date) {
       alert("Please fill all fields");
+      setLoading(false);
       return;
     }
-    onAddExpense(expense);
-    setExpense({ name: "", amount: "", category: "Food", date: "" });
+
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("authToken");
+
+      if (!token) {
+        alert("Unauthorized - No Token Found. Please log in again.");
+        window.location.href = "/login"; // Redirect to login
+        return;
+      }
+
+      console.log("Using token:", token);
+      const response = await axios.post(
+        "http://localhost:5000/expense/addExpense",
+        expense,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`.trim(),
+          },
+        }
+      );
+
+      if (response.status === 201) {
+        alert("Expense added successfully!");
+        setExpense({ name: "", amount: "", category: "Food", date: "" });
+      } else {
+        alert(response.data.message || "Failed to add expense");
+      }
+    } catch (error) {
+      alert(
+        error.response?.data?.message || "Error adding expense. Try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
+
   const options = [
-    { value: 'Food', label: 'Food' },
-    { value: 'Rent', label: 'Rent' },
-    { value: 'Travel', label: 'Travel' },
-    { value: 'Entertainment', label: 'Entertainment' },
-    { value: 'Education & Learning', label: 'Education & Learning' },
-    { value: 'Investments', label: 'Investments' },
-    { value: 'Insurance', label: 'Insurance' },
-    { value: 'Health & Fitness', label: 'Health & Fitness' },
-    { value: 'Shopping', label: 'Shopping' },
-    { value: 'Personal Care', label: 'Personal Care' },
-    { value: 'Other', label: 'Other' },
+    { value: "Food", label: "Food" },
+    { value: "Rent", label: "Rent" },
+    { value: "Travel", label: "Travel" },
+    { value: "Entertainment", label: "Entertainment" },
+    { value: "Education & Learning", label: "Education & Learning" },
+    { value: "Investments", label: "Investments" },
+    { value: "Insurance", label: "Insurance" },
+    { value: "Health & Fitness", label: "Health & Fitness" },
+    { value: "Shopping", label: "Shopping" },
+    { value: "Personal Care", label: "Personal Care" },
+    { value: "Other", label: "Other" },
   ];
 
   return (
@@ -93,8 +131,9 @@ const AddExpenseForm = ({ onAddExpense }) => {
       <button
         type="submit"
         className="bg-blue-500 text-white px-4 py-2 rounded-md w-full hover:bg-blue-600"
+        disabled={loading}
       >
-        Add Expense
+        {loading ? "Adding..." : "Add Expense"}
       </button>
     </form>
   );
