@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Select from "react-select";
 import axios from "axios";
+import UserNavbar from "./UserNavbar";
 
 const AddExpenseForm = () => {
   const [expense, setExpense] = useState({
@@ -81,61 +82,64 @@ const AddExpenseForm = () => {
   ];
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white p-6 shadow-md rounded-md max-w-2xl mx-auto w-full"
-    >
-      <h2 className="text-lg font-semibold mb-4 text-center">Add Expense</h2>
-
-      <label className="block mb-2">Expense Name</label>
-      <input
-        type="text"
-        name="name"
-        value={expense.name}
-        onChange={handleChange}
-        className="w-full p-2 border rounded-md mb-3"
-        placeholder="Enter expense name"
-        required
-      />
-
-      <label className="block mb-2">Amount ($)</label>
-      <input
-        type="number"
-        name="amount"
-        value={expense.amount}
-        onChange={handleChange}
-        className="w-full p-2 border rounded-md mb-3"
-        placeholder="Enter amount"
-        required
-      />
-
-      <label className="block mb-2">Category</label>
-      <Select
-        name="category"
-        value={options.find((option) => option.value === expense.category)}
-        onChange={handleChange}
-        options={options}
-        className="w-full mb-3"
-      />
-
-      <label className="block mb-2">Date</label>
-      <input
-        type="date"
-        name="date"
-        value={expense.date}
-        onChange={handleChange}
-        className="w-full p-2 border rounded-md mb-3"
-        required
-      />
-
-      <button
-        type="submit"
-        className="bg-blue-500 text-white px-4 py-2 rounded-md w-full hover:bg-blue-600"
-        disabled={loading}
+    <div>
+      <UserNavbar/>
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-6 mt-5 shadow-md rounded-md max-w-2xl mx-auto w-full"
       >
-        {loading ? "Adding..." : "Add Expense"}
-      </button>
-    </form>
+        <h2 className="text-lg font-semibold mb-4 text-center">Add Expense</h2>
+
+        <label className="block mb-2">Expense Name</label>
+        <input
+          type="text"
+          name="name"
+          value={expense.name}
+          onChange={handleChange}
+          className="w-full p-2 border rounded-md mb-3"
+          placeholder="Enter expense name"
+          required
+        />
+
+        <label className="block mb-2">Amount ($)</label>
+        <input
+          type="number"
+          name="amount"
+          value={expense.amount}
+          onChange={handleChange}
+          className="w-full p-2 border rounded-md mb-3"
+          placeholder="Enter amount"
+          required
+        />
+
+        <label className="block mb-2">Category</label>
+        <Select
+          name="category"
+          value={options.find((option) => option.value === expense.category)}
+          onChange={handleChange}
+          options={options}
+          className="w-full mb-3"
+        />
+
+        <label className="block mb-2">Date</label>
+        <input
+          type="date"
+          name="date"
+          value={expense.date}
+          onChange={handleChange}
+          className="w-full p-2 border rounded-md mb-3"
+          required
+        />
+
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-4 py-2 rounded-md w-full hover:bg-blue-600"
+          disabled={loading}
+        >
+          {loading ? "Adding..." : "Add Expense"}
+        </button>
+      </form>
+    </div>
   );
 };
 

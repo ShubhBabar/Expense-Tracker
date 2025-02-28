@@ -13,19 +13,21 @@ const User = () => {
     lastname: "Babar",
     email: "shubham@example.com",
     mobile: "1234567890",
-    password: "Shubham@123"
+    password: "Shubham@123",
   };
 
   // Navigate to UserProfile page to edit user info
   const handleEditProfile = () => {
-    navigate("/edituser");
+    navigate("/edit-user");
   };
 
   return (
     <div className="p-6 sm:p-8 md:p-10 lg:p-12 xl:p-14 max-w-lg mx-auto bg-white rounded-lg shadow-lg">
-      <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">User Information</h2>
+      <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
+        User Information
+      </h2>
       <div className="space-y-4">
-      <div>
+        <div>
           <span className="font-semibold">Username: </span>
           <span>{userInfo.username}</span>
         </div>

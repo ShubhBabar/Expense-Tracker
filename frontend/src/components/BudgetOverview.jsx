@@ -14,8 +14,9 @@ const BudgetOverview = () => {
           window.location.href = "/login";
           return;
         }
+        const currentMonth = new Date().toISOString().slice(0, 7);
         const budgetResponse = await axios.get(
-          "http://localhost:5000/budget/summary/:month",
+          `http://localhost:5000/budget/get-budget?month=${currentMonth}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -25,14 +26,14 @@ const BudgetOverview = () => {
         setTotalBudget(budgetResponse.data.totalBudget || 0);
 
         const expensesResponse = await axios.get(
-          "http://localhost:5000/expenses/get-expenses",
+          "http://localhost:5000/expense/expense-summary",
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
-        setExpenses(expensesResponse.data.expenses || []);
+        setExpenses(expensesResponse.data || []);
       } catch (error) {
         console.error("Error fetching budget data:", error);
       }
@@ -41,7 +42,7 @@ const BudgetOverview = () => {
     fetchBudgetData();
   }, []);
 
-  const totalSpent = expenses.reduce((acc, expense) => acc + expense.amount, 0);
+  const totalSpent = expenses.reduce((acc, expense) => acc + (expense.totalAmount || 0), 0);
   const remainingBalance = totalBudget - totalSpent;
 
   return (

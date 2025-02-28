@@ -48,4 +48,26 @@ const budgetSummary = async (req, res)=>{
   }
 }
 
-module.exports = {setBudget, budgetSummary}
+const getBudget = async (req, res) => {
+  const { month } = req.query;
+
+  if (!month) {
+    return res.status(400).json({ message: "Month is required" });
+  }
+
+  try {
+    const budget = await Budget.findOne({ userId: req.user.userId, month });
+
+    if (!budget) {
+      return res.status(404).json({ message: "No budget found for this month" });
+    }
+
+    res.json({ totalBudget: budget.totalBudget });
+  } catch (error) {
+    console.error("Error fetching budget:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+module.exports = {setBudget, budgetSummary, getBudget}

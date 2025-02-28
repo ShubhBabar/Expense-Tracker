@@ -173,6 +173,100 @@ const expenseSummary = async (req, res) => {
   }
 };
 
+
+// Get Monthly Expenses for All Months
+const monthNames = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+
+// Get Monthly Expenses for All Months
+const monthlyData = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) return res.status(400).json({ message: "User ID is required" });
+
+    const monthlyData = await Expense.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: { month: { $month: "$date" }, year: { $year: "$date" } },
+          amount: { $sum: "$amount" },
+        },
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } }, // Sort by year and month
+    ]);
+
+    res.json(
+      monthlyData.map((data) => ({
+        month: `${monthNames[data._id.month - 1]} (${data._id.year})`, // Convert number to month name
+        amount: data.amount,
+      }))
+    );
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching monthly expenses", error });
+  }
+};
+
+
+// Get Category-wise Expenses (Current Month Only)
+const categoryData = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) return res.status(400).json({ message: "User ID is required" });
+
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+
+    const categoryData = await Expense.aggregate([
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(userId),
+          date: {
+            $gte: new Date(currentYear, currentMonth - 1, 1),
+            $lt: new Date(currentYear, currentMonth, 1),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$category",
+          value: { $sum: "$amount" },
+        },
+      },
+    ]);
+
+    res.json(categoryData.map((data) => ({ category: data._id, value: data.value })));
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching current month category-wise expenses", error });
+  }
+};
+
+// Get Highest Expenses (Top 5 of Current Month)
+const highestExpenses = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) return res.status(400).json({ message: "User ID is required" });
+
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+
+    const highestExpenses = await Expense.find({
+      userId,
+      date: {
+        $gte: new Date(currentYear, currentMonth - 1, 1),
+        $lt: new Date(currentYear, currentMonth, 1),
+      },
+    })
+      .sort({ amount: -1 }) // Highest to lowest
+      .limit(7)
+      .select("category amount");
+
+    res.json(highestExpenses);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching highest expenses for current month", error });
+  }
+};
 module.exports = {
   addExpense,
   getExpense,
@@ -180,4 +274,7 @@ module.exports = {
   deleteExpense,
   expenseSummary,
   getExpenseById,
+  highestExpenses,
+  categoryData,
+  monthlyData
 };

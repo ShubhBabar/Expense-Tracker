@@ -8,6 +8,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import UserNavbar from "./UserNavbar";
 
 const ExpenseSummary = () => {
   const [categoryData, setCategoryData] = useState([]);
@@ -69,59 +70,64 @@ const ExpenseSummary = () => {
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 bg-white shadow-md rounded-md">
-      <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 text-center">
-        Expense Summary
-      </h2>
+    <div>
+      <UserNavbar/>
+      <div className="max-w-4xl mx-auto p-4 mt-5 sm:p-6 bg-white shadow-md rounded-md">
+        <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 text-center">
+          Expense Summary
+        </h2>
 
-      {/* Total Spending Card */}
-      <div className="mb-6 flex flex-col sm:flex-row justify-center items-center gap-4">
-        <div className="bg-red-100 p-4 sm:p-6 rounded-md shadow-md w-full sm:w-1/2 text-center">
-          <h3 className="text-lg font-semibold text-gray-700">Total Spent</h3>
-          <p className="text-xl sm:text-2xl font-bold text-red-600">₹{totalSpent}</p>
+        {/* Total Spending Card */}
+        <div className="mb-6 flex flex-col sm:flex-row justify-center items-center gap-4">
+          <div className="bg-red-100 p-4 sm:p-6 rounded-md shadow-md w-full sm:w-1/2 text-center">
+            <h3 className="text-lg font-semibold text-gray-700">Total Spent</h3>
+            <p className="text-xl sm:text-2xl font-bold text-red-600">
+              ₹{totalSpent}
+            </p>
+          </div>
         </div>
-      </div>
 
-      {/* Pie Chart for Category-wise Expenses */}
-      <div className="bg-gray-50 p-4 sm:p-6 rounded-md shadow-md">
-        <h3 className="text-lg font-semibold text-gray-700 mb-4 text-center">
-          Category-wise Spending
-        </h3>
-        <div className="w-full flex justify-center">
-          <ResponsiveContainer width="100%" height={350}>
-            <PieChart>
-              <Pie
-                data={categoryData}
-                dataKey="value"
-                nameKey="category"
-                cx="50%"
-                cy="50%"
-                outerRadius={window.innerWidth < 640 ? 80 : 100} // Adjust for mobile
-                fill="#8884d8"
-                label={({ name, percent }) =>
-                  window.innerWidth > 640
-                    ? `${name} ${(percent * 100).toFixed(0)}%`
-                    : null
-                }
-              >
-                {categoryData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Legend
-                layout="horizontal"
-                align="center"
-                verticalAlign="bottom"
-                wrapperStyle={{
-                  fontSize: window.innerWidth < 640 ? "12px" : "14px",
-                }}
-              />
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+        {/* Pie Chart for Category-wise Expenses */}
+        <div className="bg-gray-50 p-4 sm:p-6 rounded-md shadow-md">
+          <h3 className="text-lg font-semibold text-gray-700 mb-4 text-center">
+            Category-wise Spending
+          </h3>
+          <div className="w-full flex justify-center">
+            <ResponsiveContainer width="100%" height={350}>
+              <PieChart>
+                <Pie
+                  data={categoryData}
+                  dataKey="value"
+                  nameKey="category"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={window.innerWidth < 640 ? 80 : 100} // Adjust for mobile
+                  fill="#8884d8"
+                  label={({ name, percent }) =>
+                    window.innerWidth > 640
+                      ? `${name} ${(percent * 100).toFixed(0)}%`
+                      : null
+                  }
+                >
+                  {categoryData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Legend
+                  layout="horizontal"
+                  align="center"
+                  verticalAlign="bottom"
+                  wrapperStyle={{
+                    fontSize: window.innerWidth < 640 ? "12px" : "14px",
+                  }}
+                />
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
     </div>

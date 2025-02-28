@@ -6,6 +6,7 @@ import {
   faBars,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
+import logoimage from "../assets/Expense Tracker Logo.png"
 
 const UserNavbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -41,7 +42,7 @@ const UserNavbar = () => {
   return (
     <nav className="bg-blue-600 p-4 text-white flex justify-between items-center">
       <div className="flex items-center space-x-3">
-        <img src="/logo.png" alt="Expense Tracker Logo" className="h-8 w-35" />
+        <Link to="/dashboard"><img src={logoimage} alt="Expense Tracker Logo" className="h-8 w-35" /></Link>
       </div>
 
       <div className="hidden md:flex space-x-6">
