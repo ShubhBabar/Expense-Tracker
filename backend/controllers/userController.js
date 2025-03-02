@@ -96,9 +96,11 @@ const logoutUser = async (req, res) => {
 };
 
 const getUserById = async (req, res) => {
-  const { id } = req.params;
   try {
-    const user = await User.findById(id)
+    const userId = req.user?.userId; // Get from middleware
+    if (!userId) return res.status(400).json({ message: "User ID is required" });
+    
+    const user = await User.findById(userId)
     if (!user) {
         return res.status(404).json({ message: "User not found" });
     }
@@ -109,26 +111,70 @@ const getUserById = async (req, res) => {
   }
 };
 
-const updateUser = async (req,res)=>{
-    const { id } = req.params;
-    const { username, firstName, lastName, email, mobile, password } = req.body;
-    try {
-        let updateFields = { username,firstName, lastName, email, mobile };
-    
-        if (password) {
-          updateFields.password = await bcrypt.hash(password, 10);
-        }
-    
-        const user = await User.findByIdAndUpdate(id, updateFields, { new: true });
-    
-        if (!user) {
-          return res.status(404).json({ error: "User Not Found!" });
-        }
-    
-        res.status(200).json({ message: "User updated successfully!", user }); //here updated user is send
-      } catch (error) {
-        res.status(500).json({ error: "Internal Server Error" });
+const updateUser = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized - No User ID found" });
     }
-}
 
-module.exports = { registerUser, loginUser, logoutUser, getUserById, updateUser };
+    const { username, firstName, lastName, email, mobileNumber, password } = req.body;
+
+    if (username) {
+      const existingUser = await User.findOne({ username });
+      if (existingUser && existingUser._id.toString() !== userId) {
+        return res.status(400).json({ error: "Username already taken" });
+      }
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User Not Found!" });
+    }
+
+    // Update fields only if provided
+    user.username = username || user.username;
+    user.firstName = firstName || user.firstName;
+    user.lastName = lastName || user.lastName;
+    user.email = email || user.email;
+    user.mobileNumber = mobileNumber || user.mobileNumber;
+
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
+    }
+
+    await user.save();
+
+    res.status(200).json({ message: "User updated successfully!", user });
+  } catch (error) {
+    console.error("Update Error:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+// Reset Password
+const resetPassword = async (req, res) => {
+  try {
+    const { identifier, newPassword } = req.body;
+
+    // Find user by username or mobile number
+    const user = await User.findOne({
+      $or: [{ username: identifier }],
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Hash the new password
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successful. You can now log in." });
+  } catch (error) {
+    console.error("Reset Password Error:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+};
+
+module.exports = { registerUser, loginUser, logoutUser, getUserById, updateUser, resetPassword };

@@ -1,126 +1,143 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import UserNavbar from "./UserNavbar";
 
 const UpdateUserProfile = () => {
   const navigate = useNavigate();
-
-  // Initialize state for user information
   const [userInfo, setUserInfo] = useState({
-    username: "Shubhambabar",
-    firstname: "Shubham",
-    lastname: "Babar",
-    email: "shubham@example.com",
-    mobile: "1234567890",
-    password: "Shubham@123"
+    username: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    mobileNumber: "",
   });
 
-  // Handle input changes for user info fields
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          alert("Unauthorized - No Token Found. Please log in again.");
+          navigate("/login");
+          return;
+        }
+
+        const response = await axios.get("http://localhost:5000/user/get-profile", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setUserInfo((prev) => ({
+          ...prev,
+          ...response.data,
+        }));
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+      }
+    };
+
+    fetchUserDetails();
+  }, [navigate]);
+
+  // Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUserInfo({
-      ...userInfo,
+    setUserInfo((prev) => ({
+      ...prev,
       [name]: value,
-    });
+    }));
   };
 
-  // Handle form submission (update user info)
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert("User information updated successfully!");
-    navigate("/user");
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        alert("Unauthorized - No Token Found. Please log in again.");
+        navigate("/login");
+        return;
+      }
+
+      const response = await axios.put(
+        "http://localhost:5000/user/update-profile",
+        userInfo,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setSuccess("User information updated successfully!");
+      setUserInfo(response.data.user); 
+      console.log("Updated User Data:", response.data.user);
+
+      setTimeout(() => {
+        navigate("/user");
+      }, 1500);
+    } catch (error) {
+      setError(error.response?.data?.message || "Error updating profile");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="p-6 sm:p-8 md:p-10 lg:p-12 xl:p-14 max-w-lg mx-auto bg-white rounded-lg shadow-lg">
-      <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Update Profile</h2>
-      <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="flex flex-col space-y-2">
-          <label htmlFor="firstname" className="text-sm font-medium text-gray-700">Username</label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            value={userInfo.username}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            required
-          />
-        </div>
+    <div>
+      <UserNavbar />
+      <div className="p-6 mt-5 sm:p-8 md:p-10 lg:p-12 xl:p-14 max-w-lg mx-auto bg-white rounded-lg shadow-lg">
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
+          Update Profile
+        </h2>
 
-        <div className="flex flex-col space-y-2">
-          <label htmlFor="firstname" className="text-sm font-medium text-gray-700">First Name</label>
-          <input
-            type="text"
-            id="firstname"
-            name="firstname"
-            value={userInfo.firstname}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            required
-          />
-        </div>
+        {error && <p className="text-red-500 text-center">{error}</p>}
+        {success && <p className="text-green-500 text-center">{success}</p>}
 
-        <div className="flex flex-col space-y-2">
-          <label htmlFor="lastname" className="text-sm font-medium text-gray-700">Last Name</label>
-          <input
-            type="text"
-            id="lastname"
-            name="lastname"
-            value={userInfo.lastname}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            required
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {["username", "firstName", "lastName", "email", "mobileNumber"].map(
+            (field, index) => (
+              <div key={index} className="flex flex-col space-y-2">
+                <label
+                  htmlFor={field}
+                  className="text-sm font-medium text-gray-700"
+                >
+                  {field.charAt(0).toUpperCase() + field.slice(1)}
+                </label>
+                <input
+                  type={field === "email" ? "email" : "text"}
+                  id={field}
+                  name={field}
+                  value={userInfo[field] || ""}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  required
+                />
+              </div>
+            )
+          )}
 
-        <div className="flex flex-col space-y-2">
-          <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={userInfo.email}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            required
-          />
-        </div>
-
-        <div className="flex flex-col space-y-2">
-          <label htmlFor="mobile" className="text-sm font-medium text-gray-700">Mobile Number</label>
-          <input
-            type="text"
-            id="mobile"
-            name="mobile"
-            value={userInfo.mobile}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            required
-          />
-        </div>
-
-        <div className="flex flex-col space-y-2">
-          <label htmlFor="password" className="text-sm font-medium text-gray-700">Password</label>
-          <input
-            type="text"
-            id="password"
-            name="password"
-            value={userInfo.password}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            required
-          />
-        </div>
-
-        <div className="flex justify-center">
-          <button
-            type="submit"
-            className="w-full sm:w-auto px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Update Profile
-          </button>
-        </div>
-      </form>
+          <div className="flex justify-center">
+            <button
+              type="submit"
+              className="w-full sm:w-auto px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={loading}
+            >
+              {loading ? "Updating..." : "Update Profile"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

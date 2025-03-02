@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Eye, EyeOff } from "lucide-react";
+import { toast } from "react-toastify";
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -13,6 +15,7 @@ const SignUp = () => {
     mobileNumber: "",
     countryCode: "+91",
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   const countryCodes = [
     { code: "+1", country: "USA" },
@@ -39,8 +42,8 @@ const SignUp = () => {
         }
       );
       if (response.status === 201) {
-        alert("Registration successful!");
         localStorage.setItem("authToken", response.data.token);
+        toast.success("User created successfully! ✅");
         navigate("/dashboard");
       } else {
         alert("Registration failed!");
@@ -192,18 +195,24 @@ const SignUp = () => {
               </div>
 
               {/* Password */}
-              <div>
+              <div className="relative">
                 <label className="block text-gray-700 font-medium">
                   Password
                 </label>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="w-full mt-1 p-2 border rounded-md focus:ring focus:ring-blue-200"
+                  className="w-full mt-1 p-2 border rounded-md focus:ring focus:ring-blue-200 pr-10"
                 />
+                <span
+                  className="absolute top-9 right-3 cursor-pointer text-gray-500"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </span>
               </div>
 
               <button

@@ -7,6 +7,7 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import logoimage from "../assets/Expense Tracker Logo.png"
+import { toast } from "react-toastify";
 
 const UserNavbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -30,7 +31,7 @@ const UserNavbar = () => {
 
       // Remove token from localStorage
       localStorage.removeItem("authToken");
-
+      toast.success("Log Out successfully! ✅");
       alert("Logged out successfully!");
       navigate("/login"); // Redirect to login page
     } catch (error) {
@@ -57,6 +58,9 @@ const UserNavbar = () => {
         </Link>
         <Link to="/set-budget" className="hover:underline">
           Set Budget
+        </Link>
+        <Link to="/user" className="hover:underline">
+          User
         </Link>
       </div>
       <div className="flex items-center space-x-4">
@@ -97,6 +101,13 @@ const UserNavbar = () => {
             onClick={() => setMenuOpen(false)}
           >
             Set Budget
+          </Link>
+          <Link
+            to="/user"
+            className="hover:underline"
+            onClick={() => setMenuOpen(false)}
+          >
+            User
           </Link>
         </div>
       )}

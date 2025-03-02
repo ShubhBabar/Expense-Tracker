@@ -146,8 +146,22 @@ const expenseSummary = async (req, res) => {
       return res.status(400).json({ error: "Invalid User ID" });
     }
 
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const endOfMonth = new Date();
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+    endOfMonth.setDate(0);
+    endOfMonth.setHours(23, 59, 59, 999);
+
     const categoryBreakdown = await Expense.aggregate([
-      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(userId),
+          date: { $gte: startOfMonth, $lte: endOfMonth }, // Filter for current month
+        },
+      },
       {
         $group: {
           _id: "$category",
@@ -199,7 +213,8 @@ const monthlyData = async (req, res) => {
 
     res.json(
       monthlyData.map((data) => ({
-        month: `${monthNames[data._id.month - 1]} (${data._id.year})`, // Convert number to month name
+        month: data._id.month,
+        year: data._id.year,
         amount: data.amount,
       }))
     );

@@ -13,6 +13,7 @@ const ExpenseList = () => {
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [currentPage, setCurrentPage] = useState(1); // Current page number
   const [rowsPerPage] = useState(10); // Number of rows to display per page
+  const [dateSortOrder, setDateSortOrder] = useState("asc");
 
   const categories = [
     "Food",
@@ -87,6 +88,17 @@ const ExpenseList = () => {
     setSortedExpenses(sorted);
   };
 
+  const handleDateSort = () => {
+    const sorted = [...sortedExpenses].sort((a, b) => {
+      return dateSortOrder === "asc"
+        ? new Date(a.date) - new Date(b.date)
+        : new Date(b.date) - new Date(a.date);
+    });
+
+    setDateSortOrder(dateSortOrder === "asc" ? "desc" : "asc");
+    setSortedExpenses(sorted);
+  };
+
   const handleCategoryChange = (e) => {
     setCategoryFilter(e.target.value);
   };
@@ -124,7 +136,7 @@ const ExpenseList = () => {
 
   return (
     <div>
-      <UserNavbar/>
+      <UserNavbar />
       <div className="overflow-x-auto bg-white p-6 mt-5 shadow-md rounded-md max-w-6xl mx-auto w-full">
         {/* Category Filter Dropdown and Search Bar */}
         <div className="flex flex-col sm:flex-row justify-between mb-4 space-y-4 sm:space-y-0 sm:space-x-4">
@@ -177,7 +189,18 @@ const ExpenseList = () => {
                   <span>&#8595;</span> // Down arrow for descending
                 )}
               </th>
-              <th className="px-4 py-2 text-left border-b">Date</th>
+              <th
+                className="px-4 py-2 text-left border-b cursor-pointer"
+                onClick={handleDateSort}
+              >
+                Date{" "}
+                {dateSortOrder === "asc" ? (
+                  <span>&#8593;</span>
+                ) : (
+                  <span>&#8595;</span>
+                )}
+              </th>
+
               <th className="px-4 py-2 text-left border-b">Actions</th>
             </tr>
           </thead>
@@ -188,7 +211,9 @@ const ExpenseList = () => {
                   <td className="px-4 py-2">{expense.name}</td>
                   <td className="px-4 py-2">{expense.category}</td>
                   <td className="px-4 py-2">{expense.amount}</td>
-                  <td className="px-4 py-2">{expense.date}</td>
+                  <td className="px-4 py-2">
+                    {new Date(expense.date).toLocaleDateString("en-CA")}
+                  </td>
                   <td className="px-4 py-2 text-center">
                     <div className="flex flex-col sm:flex-row justify-center space-y-2 sm:space-x-2 sm:space-y-0">
                       <button

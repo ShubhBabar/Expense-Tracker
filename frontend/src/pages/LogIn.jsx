@@ -1,6 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-toastify";
+import { Eye, EyeOff } from "lucide-react";
 
 const LogIn = () => {
   const navigate = useNavigate();
@@ -8,6 +10,7 @@ const LogIn = () => {
     email: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -16,22 +19,26 @@ const LogIn = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:5000/user/login", formData,{
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
+      const response = await axios.post(
+        "http://localhost:5000/user/login",
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
       if (response.status === 200) {
         console.log("Login Response:", response.data);
-        alert("Login successful!");
+        toast.success("Logged in successfully! ✅");
         localStorage.setItem("authToken", response.data.token);
-        console.log("Token stored:", response.data.token);
+
         navigate("/dashboard");
       } else {
         alert(response.data.message || "Login failed");
       }
     } catch (error) {
-      alert("something went wrong while trying to Login")
+      alert("something went wrong while trying to Login");
     }
   };
   return (
@@ -52,16 +59,22 @@ const LogIn = () => {
               className="w-full mt-1 p-2 border rounded-md focus:ring focus:ring-blue-200"
             />
           </div>
-          <div>
+          <div className="relative">
             <label className="block text-gray-700 font-medium">Password</label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="password"
               value={formData.password}
               onChange={handleChange}
               required
-              className="w-full mt-1 p-2 border rounded-md focus:ring focus:ring-blue-200"
+              className="w-full mt-1 p-2 border rounded-md focus:ring focus:ring-blue-200 pr-10"
             />
+            <span
+              className="absolute top-9 right-3 cursor-pointer text-gray-500"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </span>
           </div>
           <button
             type="submit"
@@ -71,14 +84,26 @@ const LogIn = () => {
           </button>
         </form>
         <p className="text-center text-gray-600 mt-4">
-          Don't have an account? 
-          <Link to="/signup" className="text-blue-500 font-medium hover:underline ml-1">
+          Forgot Password?
+          <Link
+            to="/reset-password"
+            className="text-blue-500 font-medium hover:underline ml-1"
+          >
+            reset password
+          </Link>
+        </p>
+        <p className="text-center text-gray-600 mt-4">
+          Don't have an account?
+          <Link
+            to="/signup"
+            className="text-blue-500 font-medium hover:underline ml-1"
+          >
             Sign Up
           </Link>
         </p>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default LogIn
+export default LogIn;
